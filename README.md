@@ -8,11 +8,11 @@
 
 ## Introduction
 
-We've seen that it is entirely possible to create our own serializers from
+We've seen that it is entirely possible to create our own service class serializers from
 scratch. This issue is common enough, though, that there are some popular
-standardized serializer options available we can use. In this lesson, we are
-going to look at the [Fast JSON API][fast_jsonapi] gem and use it to create
-serialized JSON data from the previous lesson.
+standardized serializer options available for us to use. In this lesson, we are
+going to look at one popular option, the [Fast JSON API][fast_jsonapi] gem and use it to create
+a close approximation to our JSON data from the previous lessons.
 
 The files in this lesson were populated using the API-only Rails build. Run
 `rails db:migrate` and `rails db:seed` to follow along.
@@ -33,7 +33,7 @@ JSON API to control the way our data is structured.
 
 Before we can see the solution Fast JSON API provides, let's look back at the
 problem. We will start at the same place we started when creating our own
-service class serializer. This code-along has three resources set up, birds,
+service class serializer. This code-along has three resources set up: birds,
 locations and sightings:
 
 ```rb
@@ -57,7 +57,7 @@ class Sighting < ApplicationRecord
 end
 ```
 
-We also had one customized controller action:
+We also have one customized controller action:
 
 ```rb
 class SightingsController < ApplicationController
@@ -89,9 +89,8 @@ included:
 ```
 
 With just three objects and some minor customization, rendering has become
-too complicated. With Fast JSON API, we can extract separate this work into
-Serializer classes, keeping our controllers cleaner and making it easier for
-ourselves to organize our API data.
+complicated. With Fast JSON API, we can extract and separate this work into
+Serializer classes, keeping our controller cleaner.
 
 ## Setting up Fast JSON API
 
@@ -121,7 +120,9 @@ to share in our API.
 ## Updating the Controller Action
 
 To start using the new serializers, we can update our `render json:` statement
-so that it uses the new classes built-in `serializable_hash` method:
+so that it initializes the the newly created `SightingSerializer`, passing in a variable,
+just as we did when creating our own service class. The `SightingSerializer` comes with
+a method, `serializable_hash`, we will call immediately after initialization:
 
 ```rb
 class SightingsController < ApplicationController
@@ -134,7 +135,7 @@ end
 
 This statement can now be used on _all_ `SightingController` actions we want to 
 serialize, so if we were to add an `index`, for instance, we just pass in the
-array of all sightings:
+array of all sightings as well:
 
 ```rb
 def index
@@ -153,8 +154,8 @@ But there is a problem still! If we fire up our Rails server and visit
 }
 ```
 
-The serializer is working, but the issue is that it behaves a little 
-different than we're used to.
+The serializer is working, but it behaves a little differently than we're 
+used to.
 
 ## Adding Attributes
 
@@ -209,9 +210,8 @@ class SightingSerializer
 end
 ```
 
-This results in a more detailed JSON output, where the related `"bird"` and
-`"location"` objects show up in an array with `"created_at"` from the `Sighting`
-object:
+This results in our rendered JSON including an `"attributes"` object with 
+`"created_at"`, `"bird"`, and `"location"`:
 
 ```js
 {
@@ -259,7 +259,8 @@ end
 ```
 
 However, when visiting `http://localhost:3000/sightings/2`, Fast JSON API will 
-only display the related `"id"` keys along with the `"type"`:
+display a new `"relationships"` object, but will give only provide limited
+information, including the id of the related object:
 
 ```js
 {
@@ -285,10 +286,11 @@ only display the related `"id"` keys along with the `"type"`:
 }
 ```
 
-Now that we have included relationships connecting the `SightingSerializer` to
+Setting these relationships up is necessary for the second step. Now that we 
+have included relationships connecting the `SightingSerializer` to
 `:bird` and `:location`, to include attributes from those objects, the
-recommended method is to go to the controller action and pass in a second
-parameter to the serializer to include those objects:
+recommended method is to pass in a second
+parameter to the serializer indicating that we want to _include_ those objects:
 
 ```rb
 def show
@@ -363,16 +365,20 @@ There is a lot more you can do with the Fast JSON API gem, and it is worth
 reading through their [documentation][contents] to become more familiar with
 it. It is possible, for instance, to create entirely custom attributes!
 
-However, what we covered is enough to get us close to where we were creating our
-own customized serializers. We do not get to choose exactly how the data get
-structured the way we can write our own. However, the Fast JSON API gem
-provides a quick way to generate and customize JSON serializers with minimal
-configuration. Its conventions also allow it to work well even when dealing with
-a large number of related objects.
+What we covered is enough to get us close to where we were creating our
+own customized serializers. We do not get to choose exactly how data gets
+serialized the way we do when write our own serializer classes, but we 
+gain a lot of flexibility by using the Fast JSON API. From this point in the
+example bird watching application, we could fill out bird and location controllers
+and when we add in actions, our serializers are already created and ready!
+
+The Fast JSON API gem provides a quick way to generate and customize JSON 
+serializers with minimal configuration. Its conventions also allow it to work 
+well even when dealing with a large number of related objects.
 
 Overall, the goal of this section is to get you comfortable enough to get Rails
 APIs up and running. With practice, it is possible to build a multi-resource
-API, complete with many serialized JSON rendering endpoints within minutes.
+API, complete with many serialized JSON rendering endpoints _within minutes_.
 
 Being able to quickly spin up an API to practice your `fetch()` skills is an
 excellent way to get familiar with asynchronous requests. As you move towards
