@@ -382,6 +382,8 @@ asset in your development through the remainder of this course.
 
 ## Resources
 
+- [Fast JSON API][fast_jsonapi]
+
 [fast_jsonapi]: https://github.com/Netflix/fast_jsonapi
 [compounded]: https://github.com/Netflix/fast_jsonapi#compound-document
 [attributes]: https://github.com/Netflix/fast_jsonapi#attributes
