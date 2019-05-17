@@ -8,11 +8,12 @@
 
 ## Introduction
 
-We've seen that it is entirely possible to create our own service class serializers from
-scratch. This issue is common enough, though, that there are some popular
-standardized serializer options available for us to use. In this lesson, we are
-going to look at one popular option, the [Fast JSON API][fast_jsonapi] gem and use it to create
-a close approximation to our JSON data from the previous lessons.
+We've seen that it is entirely possible to create our own service class
+serializers from scratch. This issue is common enough, though, that there are
+some popular standardized serializer options available for us to use. In this
+lesson, we are going to look at one popular option, the [Fast JSON API][fast_jsonapi]
+gem and use it to create a close approximation to our JSON data from the
+previous lessons.
 
 The files in this lesson were populated using the API-only Rails build. Run
 `rails db:migrate` and `rails db:seed` to follow along.
@@ -62,8 +63,8 @@ We also have one customized controller action:
 ```rb
 class SightingsController < ApplicationController
   def show
-    @sighting = Sighting.find(params[:id])
-    render json: @sighting.to_json(:include => {:bird => {:only =>[:name, :species]}, :location => {:only =>[:latitude, :longitude]}}, :except => [:updated_at])
+    sighting = Sighting.find_by(id: params[:id])
+    render json: sighting.to_json(:include => {:bird => {:only =>[:name, :species]}, :location => {:only =>[:latitude, :longitude]}}, :except => [:updated_at])
   end
 end
 ```
@@ -95,7 +96,7 @@ Serializer classes, keeping our controller cleaner.
 ## Setting up Fast JSON API
 
 To include Fast JSON API, add `gem 'fast_jsonapi'` to your Rails project's Gemfile
-and run `bundle install`. 
+and run `bundle install`.
 
 Once installed, you will gain access to a new generator, `serializer`.
 
@@ -127,8 +128,8 @@ a method, `serializable_hash`, we will call immediately after initialization:
 ```rb
 class SightingsController < ApplicationController
   def show
-    @sighting = Sighting.find(params[:id])
-    render json: SightingSerializer.new(@sighting).serializable_hash
+    sighting = Sighting.find_by(id: params[:id])
+    render json: SightingSerializer.new(sighting).serializable_hash
   end
 end
 ```
@@ -139,8 +140,8 @@ array of all sightings as well:
 
 ```rb
 def index
-  @sightings = Sighting.all
-  render json: SightingSerializer.new(@sightings).serializable_hash
+  sightings = Sighting.all
+  render json: SightingSerializer.new(sightings).serializable_hash
 end
 ```
 
@@ -286,27 +287,19 @@ information, including the id of the related object:
 }
 ```
 
-Setting these relationships up is necessary for the second step. Now that we 
-have included relationships connecting the `SightingSerializer` to
-`:bird` and `:location`, to include attributes from those objects, the
-recommended method is to pass in a second
-parameter to the serializer indicating that we want to _include_ those objects:
+Setting these relationships up is necessary for the second step. Now that we
+have included relationships connecting the `SightingSerializer` to `:bird` and
+`:location`, to include attributes from those objects, the recommended method is
+to pass in a second _options_ parameter to the serializer indicating that we want to
+_include_ those objects:
 
 ```rb
 def show
-  @sighting = Sighting.find(params[:id])
-  render json: SightingSerializer.new(@sightings, {include: [:bird, :location]}).serializable_hash
-end
-```
-
-Many options can be [compounded] together, so it is also possible to rewrite this as:
-
-```rb
-def show
-  @sighting = Sighting.find(params[:id])
-  options = {}
-  options[:include] = [:bird, :location]
-  render json: SightingSerializer.new(@sightings, options).serializable_hash
+  sighting = Sighting.find_by(id: params[:id])
+  options = {
+    include: [:bird, :location]
+  }
+  render json: SightingSerializer.new(sightings, options).serializable_hash
 end
 ```
 
@@ -359,6 +352,42 @@ Because we have a `BirdSerializer` and a `LocationSerializer`, when including
 `:bird` and `:location`, Fast JSON API will automatically serialize their
 attributes as well.
 
+## Not Quite the Data Structure We Started With
+
+At the beginning of this lesson, we had the following JSON, but with a messy
+controller:
+
+```js
+{
+  "id": 2,
+  "bird_id": 2,
+  "location_id": 2,
+  "created_at": "2019-05-14T11:20:37.228Z",
+  "bird": {
+    "name": "Grackle",
+    "species": "Quiscalus Quiscula"
+  },
+  "location": {
+    "latitude": 30.26715,
+    "longitude": -97.74306
+  }
+}
+```
+
+If you recall from when we created our own service class, since we just moved
+the `to_json` call from the controller action to the our serializer, the
+JSON data structure looked the same.
+
+Using Fast JSON API, with the use of relationships and passing a second
+parameter, we are able to get the same _data_, but in a much different
+structure. Fast JSON API is meant to be flexible and easy to implement, and it
+definitely is! From this point in the example bird watching application, we
+could fill out bird and location controllers and when we add in controller
+actions, we already have serializers created and ready to use!
+
+In using Fast JSON API though, we lose the ability to design the structure of
+our JSON data.
+
 ## Conclusion
 
 There is a lot more you can do with the Fast JSON API gem, and it is worth
@@ -367,13 +396,11 @@ it. It is possible, for instance, to create entirely custom attributes!
 
 What we covered is enough to get us close to where we were creating our
 own customized serializers. We do not get to choose exactly how data gets
-serialized the way we do when write our own serializer classes, but we 
-gain a lot of flexibility by using the Fast JSON API. From this point in the
-example bird watching application, we could fill out bird and location controllers
-and when we add in actions, our serializers are already created and ready!
+serialized the way we do when write our own serializer classes, but we
+gain a lot of flexibility by using the Fast JSON API.
 
-The Fast JSON API gem provides a quick way to generate and customize JSON 
-serializers with minimal configuration. Its conventions also allow it to work 
+The Fast JSON API gem provides a quick way to generate and customize JSON
+serializers with minimal configuration. Its conventions also allow it to work
 well even when dealing with a large number of related objects.
 
 Overall, the goal of this section is to get you comfortable enough to get Rails
