@@ -388,7 +388,7 @@ Using Fast JSON API, with the use of relationships and passing a second
 parameter, we are able to get the same _data_, but in a much different
 structure. Fast JSON API is meant to be flexible and easy to implement, and it
 definitely is! From this point in the example bird watching application, we
-could fill out bird and location controllers and when we add in controller
+could fill out `Bird` and `Location` controllers and when we add in controller
 actions, we already have serializers created and ready to use!
 
 In using Fast JSON API though, we lose the ability to design the structure of
