@@ -33,7 +33,7 @@ JSON API to control the way our data is structured.
 ## Initial Configuration
 
 Before we can see the solution Fast JSON API provides, let's look back at the
-problem. We will start at the same place we started when creating our own
+problem we've been dealing with. We will start at the same place we started when creating our own
 service class serializer. This code-along has three resources set up: birds,
 locations and sightings:
 
@@ -64,7 +64,10 @@ We also have one customized controller action:
 class SightingsController < ApplicationController
   def show
     sighting = Sighting.find_by(id: params[:id])
-    render json: sighting.to_json(:include => {:bird => {:only =>[:name, :species]}, :location => {:only =>[:latitude, :longitude]}}, :except => [:updated_at])
+    render json: sighting.to_json(:include => {
+      :bird => {:only => [:name, :species]},
+      :location => {:only => [:latitude, :longitude]}
+    }, :except => [:updated_at])
   end
 end
 ```
@@ -122,7 +125,7 @@ to share in our API.
 
 To start using the new serializers, we can update our `render json:` statement
 so that it initializes the the newly created `SightingSerializer`, passing in a variable,
-just as we did when creating our own service class.
+just as we did when creating our own service class:
 
 ```rb
 class SightingsController < ApplicationController
@@ -137,8 +140,8 @@ end
 > called `serializable_hash` and `serialized_json` which return a serialized hash and a
 > JSON string respectively. However, we don't actually need either of these in this example,
 > as `to_json` will still be called on `SightingSerializer.new(sighting)` implicitly.
-> As we will see, once our serializers are configured, we will not need to do any 
-> additional work after a serializer is initialized
+> As we will see, once our serializers are configured and initialized, we will not need  
+> to do any additional work
 
 The `SightingSerializer.new(sighting)` statement can be used on _all_ `SightingController` 
 actions we want to serialize, so if we were to add an `index`, for instance, we just 
@@ -166,7 +169,7 @@ used to.
 
 ## Adding Attributes
 
-When rendering JSON, controllers will render all attributes available by
+When rendering JSON directly, controllers will render all attributes available by
 default. These serializers work the other way around - we must always specify
 what attributes we _want_ to include. In our example, birds have `name` and
 `species` attributes and locations have `latitude` and `longitude` attributes,
@@ -305,7 +308,7 @@ def show
   options = {
     include: [:bird, :location]
   }
-  render json: SightingSerializer.new(sightings, options)
+  render json: SightingSerializer.new(sighting, options)
 end
 ```
 
@@ -402,7 +405,7 @@ it. It is possible, for instance, to create entirely custom attributes!
 
 What we covered is enough to get us close to where we were creating our
 own customized serializers. We do not get to choose exactly how data gets
-serialized the way we do when write our own serializer classes, but we
+serialized the way we do when writing our own serializer classes, but we
 gain a lot of flexibility by using the Fast JSON API.
 
 The Fast JSON API gem provides a quick way to generate and customize JSON
