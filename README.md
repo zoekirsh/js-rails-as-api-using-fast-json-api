@@ -117,14 +117,14 @@ rails g serializer Sighting
 
 Running the above generators will create a `serializers` folder within `/app`,
 and inside, `bird_serializer.rb`, `location_serializer.rb`, and
-`sighting_serializer.rb` have been created. With these serializers, we can start
+`sighting_serializer.rb`. With these serializers, we can start
 to define information about each model and their _related_ models we want 
 to share in our API.
 
 ## Updating the Controller Action
 
 To start using the new serializers, we can update our `render json:` statement
-so that it initializes the the newly created `SightingSerializer`, passing in a variable,
+so that it initializes the newly created `SightingSerializer`, passing in a variable,
 just as we did when creating our own service class:
 
 ```rb
@@ -269,7 +269,7 @@ end
 ```
 
 However, when visiting `http://localhost:3000/sightings/2`, Fast JSON API will 
-display a new `"relationships"` object, but will give only provide limited
+display a new `"relationships"` object, but will only provide limited
 information, including the id of the related object:
 
 ```js
@@ -384,7 +384,7 @@ controller:
 ```
 
 If you recall from when we created our own service class, since we just moved
-the `to_json` call from the controller action to the our serializer, the
+the `to_json` call from the controller action to our serializer, the
 JSON data structure looked the same.
 
 Using Fast JSON API, with the use of relationships and passing a second
